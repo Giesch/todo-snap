@@ -2,13 +2,17 @@
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.10.3"]
-                 [duct/core "0.8.0"]
-                 [duct/module.ataraxy "0.3.0"]
-                 [duct/module.logging "0.5.0"]
-                 [duct/module.sql "0.6.1"]
-                 [duct/module.web "0.7.3"]
-                 [org.postgresql/postgresql "42.2.19"]]
+
+  :dependencies
+  [[org.clojure/clojure "1.10.3"]
+   [duct/core "0.8.0"]
+   [duct/module.ataraxy "0.3.0"]
+   [duct/module.logging "0.5.0"]
+   [duct/module.sql "0.6.1"]
+   [duct/module.web "0.7.3"]
+   [org.postgresql/postgresql "42.2.19"]
+   [com.github.seancorfield/honeysql "2.1.818"]]
+
   :plugins [[duct/lein-duct "0.12.3"]]
   :main ^:skip-aot todo-snap.main
   :uberjar-name  "todo-snap-standalone.jar"

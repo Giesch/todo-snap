@@ -1,18 +1,18 @@
-{:duct.profile/base
- {:duct.core/project-ns todo-snap
-
-  :duct.router/ataraxy
-  {:routes {[:get "/example"] [:todo-snap.handler/example]}}
-
-  :todo-snap.handler/example
-  {:db #ig/ref :duct.database/sql}}
+{:duct.module/logging {}
+ :duct.module.web/api {}
+ :duct.module/sql {}
 
  :duct.profile/dev   #duct/include "dev"
  :duct.profile/local #duct/include "local"
  :duct.profile/prod  {}
 
- :duct.module/logging {}
- :duct.module.web/api
- {}
- :duct.module/sql
- {}}
+ :duct.profile/base
+ {:duct.core/project-ns todo-snap
+
+  :duct.migrator/ragtime {:migrations #ig/ref :duct.migrator.ragtime/resources
+                          :database   #ig/ref :duct.database/sql}
+  :duct.migrator.ragtime/resources {:path "todo_snap/migrations"}
+
+  :duct.router/ataraxy {:routes {[:get "/example"] [:todo-snap.handler/example]}}
+
+  :todo-snap.handler/example {:db #ig/ref :duct.database/sql}}}
