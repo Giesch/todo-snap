@@ -1,6 +1,6 @@
 {:duct.module/logging {}
  :duct.module.web/api {}
- :duct.module/sql {}
+ :duct.module/sql     {}
 
  :duct.profile/dev   #duct/include "dev"
  :duct.profile/local #duct/include "local"
@@ -9,10 +9,23 @@
  :duct.profile/base
  {:duct.core/project-ns todo-snap
 
+  ;; migrations
+
   :duct.migrator/ragtime {:migrations #ig/ref :duct.migrator.ragtime/resources
                           :database   #ig/ref :duct.database/sql}
+
   :duct.migrator.ragtime/resources {:path "todo_snap/migrations"}
 
-  :duct.router/ataraxy {:routes {[:get "/example"] [:todo-snap.handler/example]}}
+  ;; handlers
 
-  :todo-snap.handler/example {:db #ig/ref :duct.database/sql}}}
+  :todo-snap.handler.todos/list   {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/create {:db #ig/ref :duct.database/sql}
+
+  ;; routes
+
+  :duct.router/ataraxy
+  {:routes
+   {[:get "/todos"] [:todo-snap.handler.todos/list]
+
+    [:post "/todos" {params :body-params}]
+    [:todo-snap.handler.todos/create params]}}}}
