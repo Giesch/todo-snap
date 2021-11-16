@@ -1,5 +1,6 @@
 CREATE TABLE todos (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  email text NOT NULL,
   title text NOT NULL,
   complete boolean NOT NULL DEFAULT false,
   deleted boolean NOT NULL DEFAULT false,

@@ -24,6 +24,7 @@
     (honey-query db {:from   [:todos]
                      :select public-cols}))
 
+  ;; TODO check exists in tx; return error/anomaly
   (update-todo [{db :spec} {:keys [id complete title]}]
     (let [set-clause (into {}
                            (filter (comp some? second))

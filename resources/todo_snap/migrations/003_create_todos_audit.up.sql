@@ -12,6 +12,7 @@ CREATE TABLE todos_audit (
   stamp timestamptz NOT NULL,
 
   id uuid NOT NULL,
+  email text NOT NULL,
   title text NOT NULL,
   complete boolean NOT NULL,
   deleted boolean NOT NULL,

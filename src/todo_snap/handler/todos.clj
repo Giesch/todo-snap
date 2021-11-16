@@ -8,8 +8,14 @@
 
 ;; validation
 
+(def valid-email-schema
+  [:and
+   {:error/message "must be a valid email address"}
+   :string [:re #".+\@.+\..+"]])
+
 (def create-todo-params
   [:map
+   [:email valid-email-schema]
    [:title :string]])
 
 (def valid-create?
@@ -23,6 +29,7 @@
   [:and
    [:map
     [:id :string]
+    [:email valid-email-schema]
     [:complete {:optional true} [:enum "true" "false"]]
     [:title {:optional true} :string]]
 
@@ -80,13 +87,6 @@
           (strip-params update-todo-params)
           (update :id parse-uuid)
           (update :complete to-nullable-bool)))
-
-(comment
-  (parse-update {:id "1d3806f8-1db8-41fd-9218-5f07c992f3a2" :complete "true"})
-  (parse-update {:id "1d3806f8-1db8-41fd-9218-5f07c992f3a2"})
-  (parse-update {:id "1d3806f8-1db8-41fd-9218-5f07c992f3a2" :complete nil})
-  ;;
-  )
 
 (defn update-todo [db params]
   (cond
