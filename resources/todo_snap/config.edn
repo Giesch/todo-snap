@@ -20,12 +20,12 @@
 
   :todo-snap.handler.todos/list   {:db #ig/ref :duct.database/sql}
   :todo-snap.handler.todos/create {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/update {:db #ig/ref :duct.database/sql}
 
   ;; routes
 
   :duct.router/ataraxy
   {:routes
    {[:get "/todos"] [:todo-snap.handler.todos/list]
-
-    [:post "/todos" {params :body-params}]
-    [:todo-snap.handler.todos/create params]}}}}
+    [:post "/todos" {p :body-params}] [:todo-snap.handler.todos/create p]
+    [:put "/todos" {p :body-params}] [:todo-snap.handler.todos/update p]}}}}

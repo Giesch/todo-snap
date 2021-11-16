@@ -13,6 +13,7 @@
    [duct/module.sql "0.6.1"]
    [duct/module.web "0.7.3"]
    [metosin/malli "0.6.2"]
+   [org.babashka/sci "0.2.7"]
    [org.postgresql/postgresql "42.2.19"]]
 
   :plugins [[duct/lein-duct "0.12.3"]]

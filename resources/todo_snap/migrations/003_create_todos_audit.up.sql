@@ -14,7 +14,10 @@ CREATE TABLE todos_audit (
   id uuid NOT NULL,
   title text NOT NULL,
   complete boolean NOT NULL,
-  deleted boolean NOT NULL
+  deleted boolean NOT NULL,
+
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE OR REPLACE FUNCTION foo_audit_info() RETURNS TRIGGER AS $$
