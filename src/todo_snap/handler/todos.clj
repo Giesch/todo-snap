@@ -41,6 +41,12 @@
 (def valid-update?
   (m/validator update-todo-params))
 
+(def list-todo-params
+  [:map [:email valid-email-schema]])
+
+(def valid-list?
+  (m/validator list-todo-params))
+
 (defn strip-params
   "Removes all extra keys from params according to a malli schema."
   [params schema]
@@ -56,13 +62,15 @@
 
 ;; list
 
-(defn list-todos [db]
-  [::response/ok (todos/list-todos db)])
+(defn list-todos [db params]
+  (if (valid-list? params)
+    [::response/ok (todos/list-todos db (:email params))]
+    [::response/bad-request (malli-error list-todo-params params)]))
 
 (defmethod ig/init-key :todo-snap.handler.todos/list
   [_ {:keys [db]}]
-  (fn [{[_] :ataraxy/result}]
-    (list-todos db)))
+  (fn [{[_ params] :ataraxy/result}]
+    (list-todos db params)))
 
 ;; create
 
@@ -97,9 +105,11 @@
     (nil? (parse-uuid (:id params)))
     [::response/bad-request "id must be a valid uuid"]
 
-    :else [::response/ok (->> params
-                              (parse-update)
-                              (todos/update-todo db))]))
+    :else (if-let [result (->> params
+                               (parse-update)
+                               (todos/update-todo db))]
+            [::response/ok result]
+            [::response/not-found])))
 
 (defmethod ig/init-key :todo-snap.handler.todos/update
   [_ {:keys [db]}]

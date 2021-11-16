@@ -8,7 +8,7 @@
 
 (defprotocol Todos
   (create-todo [db todo])
-  (list-todos [db])
+  (list-todos [db email])
   (update-todo [db params]))
 
 (def public-cols
@@ -20,17 +20,17 @@
   (create-todo [{db :spec} todo-params]
     (jdbc/insert! db :todos todo-params))
 
-  (list-todos [{db :spec}]
+  (list-todos [{db :spec} email]
     (honey-query db {:from   [:todos]
+                     :where [:= :email email]
                      :select public-cols}))
 
-  ;; TODO check exists in tx; return error/anomaly
-  (update-todo [{db :spec} {:keys [id complete title]}]
+  (update-todo [{db :spec} {:keys [id complete title email]}]
     (let [set-clause (into {}
                            (filter (comp some? second))
                            [[:complete complete] [:title title]])]
 
-      (honey-query db {:update :todos,
-                       :set    set-clause
-                       :where  [:= :id id]
-                       :returning public-cols}))))
+      (first (honey-query db {:update    :todos,
+                              :set       set-clause
+                              :where     [:and [:= :id id] [:= :email email]]
+                              :returning public-cols})))))
