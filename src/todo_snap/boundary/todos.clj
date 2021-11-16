@@ -19,7 +19,7 @@
   [id email set-clause]
   {:update    :todos,
    :set       set-clause
-   :where     [:and [:= :id id] [:= :email email]]
+   :where     [:and [:= :id id] [:= :email email] [:= :deleted false]]
    :returning public-cols})
 
 (defn- perform-update [db id email set-clause]
@@ -36,7 +36,9 @@
 
   (list-todos [{db :spec} email]
     (honey-query db {:from   [:todos]
-                     :where [:= :email email]
+                     :where  [:and
+                              [:= :email email]
+                              [:= :deleted false]]
                      :select public-cols}))
 
   (update-todo [{db :spec} {:keys [id complete title email]}]
@@ -46,4 +48,4 @@
       (perform-update db id email set-clause)))
 
   (delete-todo [{db :spec} {:keys [id email]}]
-    (perform-update db id email [:deleted true])))
+    (perform-update db id email {:deleted true})))
