@@ -9,10 +9,24 @@
 (defprotocol Todos
   (create-todo [db todo])
   (list-todos [db email])
-  (update-todo [db params]))
+  (update-todo [db params])
+  (delete-todo [db params]))
 
 (def public-cols
   [:id :title :complete])
+
+(defn- update-sql
+  [id email set-clause]
+  {:update    :todos,
+   :set       set-clause
+   :where     [:and [:= :id id] [:= :email email]]
+   :returning public-cols})
+
+(defn- perform-update [db id email set-clause]
+  (->> set-clause
+       (update-sql id email)
+       (honey-query db)
+       (first)))
 
 (extend-protocol Todos
   duct.database.sql.Boundary
@@ -29,8 +43,7 @@
     (let [set-clause (into {}
                            (filter (comp some? second))
                            [[:complete complete] [:title title]])]
+      (perform-update db id email set-clause)))
 
-      (first (honey-query db {:update    :todos,
-                              :set       set-clause
-                              :where     [:and [:= :id id] [:= :email email]]
-                              :returning public-cols})))))
+  (delete-todo [{db :spec} {:keys [id email]}]
+    (perform-update db id email [:deleted true])))
