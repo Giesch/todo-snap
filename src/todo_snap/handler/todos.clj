@@ -11,6 +11,7 @@
 (def valid-email-schema
   [:and
    {:error/message "must be a valid email address"}
+   ;; https://stackoverflow.com/questions/33736473/how-to-validate-email-in-clojure
    :string [:re #".+\@.+\..+"]])
 
 (def create-todo-params
