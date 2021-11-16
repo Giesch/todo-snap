@@ -41,11 +41,16 @@
 (def valid-update?
   (m/validator update-todo-params))
 
-(def list-todo-params
-  [:map [:email valid-email-schema]])
+(def valid-email?
+  (m/validator valid-email-schema))
 
-(def valid-list?
-  (m/validator list-todo-params))
+(def delete-todo-params
+  [:map
+   [:id :string]
+   [:email valid-email-schema]])
+
+(def valid-delete?
+  (m/validator delete-todo-params))
 
 (defn strip-params
   "Removes all extra keys from params according to a malli schema."
@@ -62,15 +67,15 @@
 
 ;; list
 
-(defn list-todos [db params]
-  (if (valid-list? params)
-    [::response/ok (todos/list-todos db (:email params))]
-    [::response/bad-request (malli-error list-todo-params params)]))
+(defn list-todos [db email]
+  (if (valid-email? email)
+    [::response/ok (todos/list-todos db email)]
+    [::response/bad-request "must be a valid email address"]))
 
 (defmethod ig/init-key :todo-snap.handler.todos/list
   [_ {:keys [db]}]
-  (fn [{[_ params] :ataraxy/result}]
-    (list-todos db params)))
+  (fn [{[_ email] :ataraxy/result}]
+    (list-todos db email)))
 
 ;; create
 
@@ -97,6 +102,11 @@
           (update :id parse-uuid)
           (update :complete to-nullable-bool)))
 
+(defn- parse-delete [params]
+  (some-> params
+          (strip-params delete-todo-params)
+          (update :id parse-uuid)))
+
 (defn update-todo [db params]
   (cond
     (not (valid-update? params))
@@ -115,3 +125,22 @@
   [_ {:keys [db]}]
   (fn [{[_ params] :ataraxy/result}]
     (update-todo db params)))
+
+(defn delete-todo [db params]
+  (cond
+    (not (valid-delete? params))
+    [::response/bad-request (malli-error delete-todo-params params)]
+
+    (nil? (parse-uuid (:id params)))
+    [::response/bad-request "id must be a valid uuid"]
+
+    :else (if-let [result (->> params
+                               (parse-delete)
+                               (todos/delete-todo db))]
+            [::response/ok result]
+            [::response/not-found])))
+
+(defmethod ig/init-key :todo-snap.handler.todos/delete
+  [_ {:keys [db]}]
+  (fn [{[_ params] :ataraxy/result}]
+    (delete-todo db params)))
