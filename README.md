@@ -57,7 +57,7 @@ The json returned by the summary endpoint looks like:
    it seems like I'd have to ask for advice in the clojurians slack, which didn't seem appropriate for this exercise.
 
 3. Structured documentation
-   I'd like to try out reitit and it's swagger integration.
+   I'd like to try out reitit and its swagger integration.
 
 ---
 
