@@ -1,6 +1,24 @@
 # todo-snap
 
-FIXME: description
+An example REST API for managing todos.
+
+To run locally, you'll need an instance of postgres. You can bring one up with docker by using the command:
+
+```sh
+docker-compose up -d
+```
+
+on linux, or:
+
+```sh
+docker compose up -d
+```
+
+on a mac. Then follow the 'developing' heading from the duct readme below.
+
+---
+
+# Generated Duct README
 
 ## Developing
 

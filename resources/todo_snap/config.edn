@@ -27,7 +27,7 @@
 
   :duct.router/ataraxy
   {:routes
-   ;; NOTE in a real app, we'd use a route param for ids,
+   ;; NOTE in a real app, we'd use a route param for resource ids,
    ;; and some kind of header or cookie for the current user
    ;; which would allow for a more normal/restful route setup
    {[:get "/todos/" email] [:todo-snap.handler.todos/list email]

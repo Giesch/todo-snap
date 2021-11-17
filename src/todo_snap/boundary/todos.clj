@@ -19,7 +19,10 @@
   [id email set-clause]
   {:update    :todos,
    :set       set-clause
-   :where     [:and [:= :id id] [:= :email email] [:= :deleted false]]
+   :where     [:and
+               [:= :id id]
+               [:= :email email]
+               [:= :deleted false]]
    :returning public-cols})
 
 (defn- perform-update [db id email set-clause]
