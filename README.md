@@ -8,13 +8,13 @@ To run locally, you'll need an instance of postgres. You can bring one up with d
 docker-compose up -d
 ```
 
-on linux, or:
+on linux (with an older docker installation), or:
 
 ```sh
 docker compose up -d
 ```
 
-on a mac. Then follow the 'developing' heading from the duct readme below.
+on a mac (with a newer docker installation). Then follow the 'developing' heading from the duct readme below.
 
 ---
 
