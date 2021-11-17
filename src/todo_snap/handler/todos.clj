@@ -107,7 +107,9 @@
           (strip-params delete-todo-params)
           (update :id parse-uuid)))
 
-(defn update-todo [db params]
+(defn update-todo
+  "Updates the title or completed status of a todo belonging to a particular user"
+  [db params]
   (cond
     (not (valid-update? params))
     [::response/bad-request (malli-error update-todo-params params)]
@@ -126,7 +128,9 @@
   (fn [{[_ params] :ataraxy/result}]
     (update-todo db params)))
 
-(defn delete-todo [db params]
+(defn delete-todo
+  "Soft deletes a todo belonging to a particular user"
+  [db params]
   (cond
     (not (valid-delete? params))
     [::response/bad-request (malli-error delete-todo-params params)]
@@ -144,3 +148,30 @@
   [_ {:keys [db]}]
   (fn [{[_ params] :ataraxy/result}]
     (delete-todo db params)))
+
+(defn- get-count
+  "Gets the count matching complete from the results-set results"
+  [results complete]
+  (->> results
+       (filter (fn [row]
+                 (= complete (:complete row))))
+       (first)
+       (:count)))
+
+(defn- summary-json
+  "Rearranges the summary results to be returned as json"
+  [results]
+  {:complete   (get-count results true)
+   :incomplete (get-count results false)})
+
+(defn get-summary
+  "Counts complete and incomplete todos for a single user"
+  [db email]
+  (if (valid-email? email)
+    [::response/ok (summary-json (todos/summary db email))]
+    [::response/bad-request "must be a valid email address"]))
+
+(defmethod ig/init-key :todo-snap.handler.todos/summary
+  [_ {:keys [db]}]
+  (fn [{[_ email] :ataraxy/result}]
+    (get-summary db email)))

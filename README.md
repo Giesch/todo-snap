@@ -1,5 +1,7 @@
 # todo-snap
 
+## Description
+
 An example REST API for managing todos.
 
 To run locally, you'll need an instance of postgres. You can bring one up with docker by using the command:
@@ -15,6 +17,47 @@ docker compose up -d
 ```
 
 on a mac (with a newer docker installation). Then follow the 'developing' heading from the duct readme below.
+
+## Routes
+
+| name    | route                  | description                                                                         |
+| ------- | ---------------------- | ----------------------------------------------------------------------------------- |
+| list    | GET "/todos/{email}"   | Returns a list of todos for a given user                                            |
+| create  | POST "/todos"          | Creates a new incomplete todo with a given title for a given user                   |
+| update  | PUT "/todos"           | Updates the title or completed status for a specific todo belonging to a given user |
+| delete  | DELETE "/todos"        | Deletes a todo matching an id/email pair (using an improper delete body)            |
+| summary | GET "/summary/{email}" | Returns complete/incomplete todo counts for a given user                            |
+
+The json for a single returned todo looks like:
+
+```json
+{
+  "id": "a45fe0de-6707-4de2-804f-6527feb90fb6",
+  "title": "bake cookies",
+  "complete": false
+}
+```
+
+The json returned by the summary endpoint looks like:
+
+```json
+{
+  "complete": 10,
+  "incomplete": 20
+}
+```
+
+## Things I'd like to fix
+
+1. Unit tests
+   They're good. This doesn't have them.
+
+2. Integration tests
+   I was hoping duct would help with this. I'm guessing there's nice patterns for doing it, but judging from github issues,
+   it seems like I'd have to ask for advice in the clojurians slack, which didn't seem appropriate for this exercise.
+
+3. Structured documentation
+   I'd like to try out reitit and it's swagger integration.
 
 ---
 

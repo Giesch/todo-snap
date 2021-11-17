@@ -10,9 +10,10 @@
   (create-todo [db todo])
   (list-todos [db email])
   (update-todo [db params])
-  (delete-todo [db params]))
+  (delete-todo [db params])
+  (summary [db email]))
 
-(def public-cols
+(def public-todo-cols
   [:id :title :complete])
 
 (defn- update-sql
@@ -23,13 +24,18 @@
                [:= :id id]
                [:= :email email]
                [:= :deleted false]]
-   :returning public-cols})
+   :returning public-todo-cols})
 
 (defn- perform-update [db id email set-clause]
   (->> set-clause
        (update-sql id email)
        (honey-query db)
        (first)))
+
+(defn where-user-todos [email]
+  [:and
+   [:= :email email]
+   [:= :deleted false]])
 
 (extend-protocol Todos
   duct.database.sql.Boundary
@@ -39,10 +45,8 @@
 
   (list-todos [{db :spec} email]
     (honey-query db {:from   [:todos]
-                     :where  [:and
-                              [:= :email email]
-                              [:= :deleted false]]
-                     :select public-cols}))
+                     :where  (where-user-todos email)
+                     :select public-todo-cols}))
 
   (update-todo [{db :spec} {:keys [id complete title email]}]
     (let [set-clause (into {}
@@ -51,4 +55,10 @@
       (perform-update db id email set-clause)))
 
   (delete-todo [{db :spec} {:keys [id email]}]
-    (perform-update db id email {:deleted true})))
+    (perform-update db id email {:deleted true}))
+
+  (summary [{db :spec} email]
+    (honey-query db {:from     [:todos]
+                     :where    (where-user-todos email)
+                     :group-by [:complete]
+                     :select   [:complete [[:count :*]]]})))

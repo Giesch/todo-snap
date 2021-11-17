@@ -18,19 +18,22 @@
 
   ;; handlers
 
-  :todo-snap.handler.todos/list   {:db #ig/ref :duct.database/sql}
-  :todo-snap.handler.todos/create {:db #ig/ref :duct.database/sql}
-  :todo-snap.handler.todos/update {:db #ig/ref :duct.database/sql}
-  :todo-snap.handler.todos/delete {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/list    {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/create  {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/update  {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/delete  {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/summary {:db #ig/ref :duct.database/sql}
 
   ;; routes
 
   :duct.router/ataraxy
   {:routes
+
    ;; NOTE in a real app, we'd use a route param for resource ids,
    ;; and some kind of header or cookie for the current user
    ;; which would allow for a more normal/restful route setup
-   {[:get "/todos/" email] [:todo-snap.handler.todos/list email]
-    [:post "/todos" {p :body-params}] [:todo-snap.handler.todos/create p]
-    [:put "/todos" {p :body-params}] [:todo-snap.handler.todos/update p]
-    [:delete "/todos" {p :body-params}] [:todo-snap.handler.todos/delete p]}}}}
+   {[:get "/todos/" email]              [:todo-snap.handler.todos/list email]
+    [:post "/todos" {p :body-params}]   [:todo-snap.handler.todos/create p]
+    [:put "/todos" {p :body-params}]    [:todo-snap.handler.todos/update p]
+    [:delete "/todos" {p :body-params}] [:todo-snap.handler.todos/delete p]
+    [:get "/summary/" email]            [:todo-snap.handler.todos/summary email]}}}}
