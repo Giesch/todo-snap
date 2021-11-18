@@ -37,3 +37,5 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER todos_audit_trigger AFTER INSERT OR UPDATE OR DELETE ON todos
 FOR EACH ROW EXECUTE PROCEDURE foo_audit_info();
+
+CREATE INDEX ON todos_audit (deleted, email);

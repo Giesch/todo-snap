@@ -1,29 +1,46 @@
 (ns todo-snap.boundary.todos
   (:require duct.database.sql
             [honey.sql :as sql]
-            [clojure.java.jdbc :as jdbc]))
+            [clojure.java.jdbc :as jdbc]
+            [clojure.java.io :as io]))
 
 (defn- honey-query [db-spec sql-map]
   (jdbc/query db-spec (sql/format sql-map)))
 
 (defprotocol Todos
-  (create-todo [db todo])
-  (list-todos [db email])
-  (update-todo [db params])
-  (delete-todo [db params])
-  (summary [db email]))
+  "A repository for users' todos"
+
+  (create-todo [db todo]
+    "Inserts a todo for a given user")
+
+  (list-todos [db email]
+    "Lists undeleted todos for a given user")
+
+  (update-todo [db params]
+    "Updates a todo by id and owner email")
+
+  (delete-todo [db params]
+    "Deletes a todo by id and owner email")
+
+  (summary [db email]
+    "Gets summary information (complete/incomplete counts) for a given user")
+
+  (burndown [db email]
+    "Gets complete state change events for a given user"))
 
 (def public-todo-cols
   [:id :title :complete])
+
+(defn- where-user-todos [email]
+  [:and
+   [[:not :deleted]]
+   [:= :email email]])
 
 (defn- update-sql
   [id email set-clause]
   {:update    :todos,
    :set       set-clause
-   :where     [:and
-               [:= :id id]
-               [:= :email email]
-               [:= :deleted false]]
+   :where     (conj (where-user-todos email) [:= :id id])
    :returning public-todo-cols})
 
 (defn- perform-update [db id email set-clause]
@@ -32,10 +49,8 @@
        (honey-query db)
        (first)))
 
-(defn where-user-todos [email]
-  [:and
-   [:= :email email]
-   [:= :deleted false]])
+(def ^:private burndown-query
+  (slurp (io/resource "todo_snap/queries/burndown.sql")))
 
 (extend-protocol Todos
   duct.database.sql.Boundary
@@ -61,4 +76,7 @@
     (honey-query db {:from     [:todos]
                      :where    (where-user-todos email)
                      :group-by [:complete]
-                     :select   [:complete [[:count :*]]]})))
+                     :select   [:complete [[:count :*]]]}))
+
+  (burndown [{db :spec} email]
+    (jdbc/query db [burndown-query email])))

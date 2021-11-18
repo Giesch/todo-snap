@@ -44,6 +44,11 @@
 (def valid-email?
   (m/validator valid-email-schema))
 
+(defn- with-valid-email [email f]
+  (if (valid-email? email)
+    [::response/ok (f email)]
+    [::response/bad-request "must be a valid email address"]))
+
 (def delete-todo-params
   [:map
    [:id :string]
@@ -68,9 +73,8 @@
 ;; list
 
 (defn list-todos [db email]
-  (if (valid-email? email)
-    [::response/ok (todos/list-todos db email)]
-    [::response/bad-request "must be a valid email address"]))
+  (with-valid-email email
+    #(todos/list-todos db %)))
 
 (defmethod ig/init-key :todo-snap.handler.todos/list
   [_ {:keys [db]}]
@@ -167,11 +171,22 @@
 (defn get-summary
   "Counts complete and incomplete todos for a single user"
   [db email]
-  (if (valid-email? email)
-    [::response/ok (summary-json (todos/summary db email))]
-    [::response/bad-request "must be a valid email address"]))
+  (with-valid-email email
+    #(summary-json (todos/summary db %))))
 
 (defmethod ig/init-key :todo-snap.handler.todos/summary
   [_ {:keys [db]}]
   (fn [{[_ email] :ataraxy/result}]
     (get-summary db email)))
+
+(defn get-burndown
+  ;; TODO camel case this json
+  "Returns an ordered list of todo changes, with a running total of incomplete undeleted todos"
+  [db email]
+  (with-valid-email email
+    #(todos/burndown db %)))
+
+(defmethod ig/init-key :todo-snap.handler.todos/burndown
+  [_ {:keys [db]}]
+  (fn [{[_ email] :ataraxy/result}]
+    (get-burndown db email)))

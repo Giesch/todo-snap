@@ -11,3 +11,5 @@ CREATE TABLE todos (
 
 CREATE TRIGGER set_updated_at BEFORE UPDATE ON todos
 FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+
+CREATE INDEX ON todos (deleted, email);

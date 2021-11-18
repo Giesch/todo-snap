@@ -20,13 +20,14 @@ on a mac (with a newer docker installation). Then follow the 'developing' headin
 
 ## Routes
 
-| name    | route                  | description                                                                         |
-| ------- | ---------------------- | ----------------------------------------------------------------------------------- |
-| list    | GET "/todos/{email}"   | Returns a list of todos for a given user                                            |
-| create  | POST "/todos"          | Creates a new incomplete todo with a given title for a given user                   |
-| update  | PUT "/todos"           | Updates the title or completed status for a specific todo belonging to a given user |
-| delete  | DELETE "/todos"        | Deletes a todo matching an id/email pair (using an improper delete body)            |
-| summary | GET "/summary/{email}" | Returns complete/incomplete todo counts for a given user                            |
+| name     | route                   | description                                                                         |
+| -------- | ----------------------- | ----------------------------------------------------------------------------------- |
+| list     | GET "/todos/{email}"    | Returns a list of todos for a given user                                            |
+| create   | POST "/todos"           | Creates a new incomplete todo with a given title for a given user                   |
+| update   | PUT "/todos"            | Updates the title or completed status for a specific todo belonging to a given user |
+| delete   | DELETE "/todos"         | Deletes a todo matching an id/email pair (using an improper delete body)            |
+| summary  | GET "/summary/{email}"  | Returns complete/incomplete todo counts for a given user                            |
+| burndown | GET "/burndown/{email}" | Returns an array of todo events with a running burndown total of incomplete todos   |
 
 The json for a single returned todo looks like:
 
@@ -46,6 +47,10 @@ The json returned by the summary endpoint looks like:
   "incomplete": 20
 }
 ```
+
+The json returned by the burndown endpoint looks like:
+
+TODO
 
 ## Things I'd like to fix
 

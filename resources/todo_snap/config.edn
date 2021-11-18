@@ -18,11 +18,12 @@
 
   ;; handlers
 
-  :todo-snap.handler.todos/list    {:db #ig/ref :duct.database/sql}
-  :todo-snap.handler.todos/create  {:db #ig/ref :duct.database/sql}
-  :todo-snap.handler.todos/update  {:db #ig/ref :duct.database/sql}
-  :todo-snap.handler.todos/delete  {:db #ig/ref :duct.database/sql}
-  :todo-snap.handler.todos/summary {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/list     {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/create   {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/update   {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/delete   {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/summary  {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/burndown {:db #ig/ref :duct.database/sql}
 
   ;; routes
 
@@ -36,4 +37,5 @@
     [:post "/todos" {p :body-params}]   [:todo-snap.handler.todos/create p]
     [:put "/todos" {p :body-params}]    [:todo-snap.handler.todos/update p]
     [:delete "/todos" {p :body-params}] [:todo-snap.handler.todos/delete p]
-    [:get "/summary/" email]            [:todo-snap.handler.todos/summary email]}}}}
+    [:get "/summary/" email]            [:todo-snap.handler.todos/summary email]
+    [:get "/burndown/" email]           [:todo-snap.handler.todos/burndown email]}}}}
