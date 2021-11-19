@@ -86,6 +86,9 @@ Each event represents a change to the database. The "burndownTotal" is the numbe
 4. Use coercers in the router  
    The validation for uuids is currently duplicated. It looks like reitit and malli have a nice solution for this.
 
+5. Exposed db details  
+   The op in the event doesn't match the operations that are exposed to the client. A client's delete is a db update, and a db delete is unavailable to the client. That's confusing at best, and could lead to incorrect assumptions down the line. It should be changed to match the operations the client can do.
+
 ---
 
 # Generated Duct README
