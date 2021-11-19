@@ -41,9 +41,10 @@
                          :id    (:id todo)}))
 
 (defn- strip-burndown-event
-  "Keeps only the deterministic fields for test assertions"
+  "Keeps only the deterministic fields of a todo audit event for test assertions"
   [event]
-  (select-keys event [:burndown_total :change :complete :prev_complete :op :title :deleted]))
+  (select-keys event [:burndown_total :change :complete
+                      :prev_complete :op :title :deleted]))
 
 (t/deftest todos-boundary-test
   (t/testing "create and complete a todo"
@@ -53,7 +54,9 @@
       (complete-todo! db cookies-todo)
 
       (let [listed-todos  (todos/list-todos db valid-email)
-            expected-todo (assoc (select-keys cookies-todo todos/public-todo-cols) :complete true)]
+            expected-todo (-> cookies-todo
+                              (select-keys todos/public-todo-cols)
+                              (assoc :complete true))]
         (t/is (= [expected-todo] listed-todos)))))
 
   (t/testing "todos summary"
@@ -79,7 +82,8 @@
           (let [fifth-todo (insert-todo! db "fifth")]
             (complete-todo! db fifth-todo)
             (delete-todo! db fourth-todo)
-            (complete-todo! db first-todo))))
+            (complete-todo! db first-todo)
+            (delete-todo! db first-todo))))
 
       (let [expected-events [{:burndown_total 1,
                               :change 1,
@@ -109,7 +113,6 @@
                               :change -1,
                               :complete true,
                               :op "update",
-                              ;; TODO do we need a prev-deleted? for the ui?
                               :prev_complete false
                               :deleted false
                               :title "second"}
@@ -146,7 +149,6 @@
                               :deleted false
                               :title "fifth"}
 
-                             ;; TODO include deleted and prev_deleted
                              {:burndown_total 1,
                               :change -1,
                               :complete false,
@@ -161,6 +163,15 @@
                               :op "update",
                               :prev_complete false,
                               :deleted false
+                              :title "first"}
+
+                             {:burndown_total 0,
+                              :change 0,
+                              :complete true,
+                              :deleted true,
+                              :op "update",
+                              :prev_complete true,
                               :title "first"}]]
+
         (t/is (= expected-events
                  (map strip-burndown-event (todos/burndown db valid-email))))))))

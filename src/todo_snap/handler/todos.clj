@@ -16,10 +16,13 @@
    ;; https://stackoverflow.com/questions/33736473/how-to-validate-email-in-clojure
    :string [:re #".+\@.+\..+"]])
 
+(def todo-title-schema
+  [:string {:min 1, :max 500}])
+
 (def create-todo-params
   [:map
    [:email valid-email-schema]
-   [:title :string]])
+   [:title todo-title-schema]])
 
 (def valid-create?
   (m/validator create-todo-params))
@@ -34,7 +37,7 @@
     [:id :string]
     [:email valid-email-schema]
     [:complete {:optional true} [:enum "true" "false"]]
-    [:title {:optional true} :string]]
+    [:title {:optional true} todo-title-schema]]
 
    [:fn {:error/message "at least one property is required"}
     '(fn [{:keys [title complete]}]

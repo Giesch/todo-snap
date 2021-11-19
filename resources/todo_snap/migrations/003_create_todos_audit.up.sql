@@ -4,8 +4,11 @@ CREATE TYPE audit_op AS ENUM (
   'delete'
 );
 
--- audit table implementation taken from here:
+-- I read a number of things about audit tables while working on this and the burndown query,
+-- including the postgres docs, and an implementation I maintain at work.
+-- These were the articles I took the most from:
 -- https://www.enterprisedb.com/postgres-tutorials/working-postgres-audit-triggers
+-- https://fle.github.io/detect-value-changes-between-successive-lines-with-postgresql.html
 
 CREATE TABLE todos_audit (
   op audit_op NOT NULL,

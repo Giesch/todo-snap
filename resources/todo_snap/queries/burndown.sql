@@ -1,10 +1,7 @@
 -- This query does two subquery scans, which will be slow.
--- We could do the work on write, in the audit trigger.
--- I'm guessing that datomic also makes this easier, which is probably the point.
---
--- I read a number of things about audit tables while working on this,
--- including an implementation I maintain at work. This was the one I took the most from:
--- https://fle.github.io/detect-value-changes-between-successive-lines-with-postgresql.html
+-- To improve this, we could do the work on write, in the audit trigger.
+-- There may also be a way to handle it with a materialized view.
+-- I'd guess that datomic makes this easier, which is probably the point.
 
 WITH events AS (
     SELECT (CASE audit.op
@@ -36,7 +33,7 @@ changes AS (
                 WHEN 'insert' THEN 1
                 WHEN 'delete' THEN -1
                 -- NOTE this relies on the where cause below,
-                -- which only includes complete state changes and soft deletions
+                -- which only includes completeness state changes and soft deletions
                 WHEN 'update' THEN (CASE (events.complete, events.deleted)
                                         -- undeleted, complete -> incomplete
                                         WHEN (FALSE, FALSE) THEN 1
