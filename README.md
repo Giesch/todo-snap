@@ -74,16 +74,16 @@ Each event represents a change to the database. The "burndownTotal" is the numbe
 
 ## Things I'd like to fix
 
-1. Improve integration tests
+1. Improve integration tests  
    I'm guessing there's a nicer way to do integration or e2e tests with duct. But judging from github issues, I think I'd have to ask for advice in the clojurians slack, which didn't seem appropriate for this exercise.
 
-2. Structured documentation
+2. Structured documentation  
    I'd like to try out reitit and its swagger integration.
 
-3. Datomic implementation
+3. Datomic implementation  
    My original stretch goal was to add a datomic implementation at the end, but I'm adding docs and tests instead.
 
-4. Use coercers in the router
+4. Use coercers in the router  
    The validation for uuids is currently duplicated. It looks like reitit and malli have a nice solution for this.
 
 ---
