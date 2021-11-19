@@ -35,9 +35,17 @@ changes AS (
         (CASE events.op
                 WHEN 'insert' THEN 1
                 WHEN 'delete' THEN -1
+                -- NOTE this relies on the where cause below,
+                -- which only includes complete state changes and soft deletions
                 WHEN 'update' THEN (CASE (events.complete, events.deleted)
+                                        -- undeleted, complete -> incomplete
                                         WHEN (FALSE, FALSE) THEN 1
-                                        ELSE -1
+                                        -- undeleted, incomplete -> complete
+                                        WHEN (TRUE, FALSE) THEN -1
+                                        -- incomplete, newly deleted
+                                        WHEN (FALSE, TRUE) THEN -1
+                                        -- complete, newly deleted
+                                        WHEN (TRUE, TRUE) THEN 0
                                     END)
             END) AS change
     FROM events
