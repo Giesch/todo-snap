@@ -9,7 +9,6 @@ CREATE TYPE audit_op AS ENUM (
 
 CREATE TABLE todos_audit (
   op audit_op NOT NULL,
-  stamp timestamptz NOT NULL,
 
   id uuid NOT NULL,
   email text NOT NULL,
@@ -24,11 +23,11 @@ CREATE TABLE todos_audit (
 CREATE OR REPLACE FUNCTION foo_audit_info() RETURNS TRIGGER AS $$
 BEGIN
     IF (TG_OP = 'DELETE') THEN
-        INSERT INTO todos_audit SELECT 'delete', now(), OLD.*;
+        INSERT INTO todos_audit SELECT 'delete', OLD.*;
     ELSIF (TG_OP = 'UPDATE') THEN
-        INSERT INTO todos_audit SELECT 'update', now(), NEW.*;
+        INSERT INTO todos_audit SELECT 'update', NEW.*;
     ELSIF (TG_OP = 'INSERT') THEN
-        INSERT INTO todos_audit SELECT 'insert', now(), NEW.*;
+        INSERT INTO todos_audit SELECT 'insert', NEW.*;
     END IF;
 
     RETURN null;

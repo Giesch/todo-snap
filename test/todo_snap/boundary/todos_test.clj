@@ -1,6 +1,5 @@
 (ns todo-snap.boundary.todos-test
   (:require [todo-snap.boundary.todos :as todos]
-            [duct.core :as duct]
             [duct.database.sql :as duct-sql]
             [ragtime.core :as ragtime]
             [ragtime.jdbc :as rag-jdbc]
@@ -37,6 +36,11 @@
                          :email    valid-email
                          :id       (:id todo)}))
 
+(defn- strip-burndown-event
+  "Keeps only the deterministic fields for test assertions"
+  [event]
+  (select-keys event [:burndown_total :change :complete :prev_complete :op :title]))
+
 (t/deftest todos-boundary-test
   (t/testing "create and complete a todo"
     (let [db           (make-test-db)
@@ -46,14 +50,85 @@
 
       (let [listed-todos  (todos/list-todos db valid-email)
             expected-todo (assoc (select-keys cookies-todo todos/public-todo-cols) :complete true)]
-        (t/is (= listed-todos [expected-todo])))))
+        (t/is (= [expected-todo] listed-todos)))))
 
   (t/testing "todos summary"
-    (let [db                (make-test-db)
-          cookies-todo      (insert-todo db "bake cookies")]
+    (let [db           (make-test-db)
+          cookies-todo (insert-todo db "bake cookies")]
       (complete-todo db cookies-todo)
       (insert-todo db "eat cookies")
       (insert-todo db "bake more cookies")
 
       (t/is (= [{:complete false :count 2} {:complete true :count 1}]
-               (todos/summary db valid-email))))))
+               (todos/summary db valid-email)))))
+
+  (t/testing "todos burndown"
+    (let [db (make-test-db)]
+      (let [first-todo  (insert-todo db "first")
+            second-todo (insert-todo db "second")]
+
+        (complete-todo db second-todo)
+
+        (let [third-todo (insert-todo db "third")]
+          (complete-todo db third-todo)
+          (let [fourth-todo (insert-todo db "fourth")]
+            (complete-todo db fourth-todo)
+            (complete-todo db first-todo))))
+
+      (let [expected-events [{:burndown_total 1
+                              :change         1
+                              :complete       false
+                              :op             "insert"
+                              :prev_complete  nil
+                              :title          "first"}
+
+                             {:burndown_total 2,
+                              :change         1,
+                              :complete       false,
+                              :op             "insert",
+                              :prev_complete  nil,
+                              :title          "second"}
+
+                             {:burndown_total 1,
+                              :change         -1,
+                              :complete       true,
+                              :op             "update",
+                              :prev_complete  false,
+                              :title          "second"}
+
+                             {:burndown_total 2,
+                              :change         1,
+                              :complete       false,
+                              :op             "insert",
+                              :prev_complete  nil,
+                              :title          "third"}
+
+                             {:burndown_total 1,
+                              :change         -1,
+                              :complete       true,
+                              :op             "update",
+                              :prev_complete  false,
+                              :title          "third"}
+
+                             {:burndown_total 2,
+                              :change         1,
+                              :complete       false,
+                              :op             "insert",
+                              :prev_complete  nil,
+                              :title          "fourth"}
+
+                             {:burndown_total 1,
+                              :change         -1,
+                              :complete       true,
+                              :op             "update",
+                              :prev_complete  false,
+                              :title          "fourth"}
+
+                             {:burndown_total 0,
+                              :change         -1,
+                              :complete       true,
+                              :op             "update",
+                              :prev_complete  false,
+                              :title          "first"}]]
+        (t/is (= expected-events
+                 (map strip-burndown-event (todos/burndown db valid-email))))))))

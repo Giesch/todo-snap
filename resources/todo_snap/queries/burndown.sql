@@ -8,7 +8,9 @@
 WITH events AS (
     SELECT (CASE audit.op
                 WHEN 'update' THEN
-                    LEAD(audit.complete) OVER (ORDER BY audit.updated_at ASC)
+                    LAG(audit.complete) OVER (
+                        PARTITION BY audit.id ORDER BY audit.updated_at ASC
+                    )
                 ELSE NULL
             END) AS prev_complete,
             audit.complete,
@@ -18,7 +20,7 @@ WITH events AS (
             audit.id
     FROM todos_audit audit
     WHERE NOT audit.deleted AND audit.email = ?
-    ORDER BY audit.id, audit.updated_at DESC
+    ORDER BY audit.id, audit.updated_at ASC
 ),
 
 changes AS (
@@ -33,7 +35,7 @@ changes AS (
             END) AS change
     FROM events
     WHERE (events.op != 'update')
-       OR (events.op = 'update' AND events.complete IS DISTINCT FROM events.prev_complete)
+       OR (events.complete IS DISTINCT FROM events.prev_complete)
     ORDER BY events.updated_at ASC
 )
 
