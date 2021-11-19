@@ -1,7 +1,9 @@
-(ns todo-snap.handler.todo-test
+(ns todo-snap.handler.todos-test
   (:require [clojure.test :as t]
             [todo-snap.boundary.todos :as boundary]
             [todo-snap.handler.todos :as handler]))
+
+;; NOTE in a real app, we'd want to use a mocking library
 
 (defrecord MockDB [opts])
 
