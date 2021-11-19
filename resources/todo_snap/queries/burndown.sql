@@ -1,5 +1,6 @@
--- This query is a candidate for turning into a view,
--- or for using datomic features (which I'd guess is the point).
+-- This query does two subquery scans, which will be slow.
+-- We could do the work on write, in the audit trigger.
+-- I'm guessing that datomic also makes this easier, which is probably the point.
 --
 -- I read a number of things about audit tables while working on this,
 -- including an implementation I maintain at work. This was the one I took the most from:
