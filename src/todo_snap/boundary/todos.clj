@@ -1,5 +1,5 @@
 (ns todo-snap.boundary.todos
-  (:require duct.database.sql
+  (:require [duct.database.sql]
             [honey.sql :as sql]
             [clojure.java.jdbc :as jdbc]
             [clojure.java.io :as io]))
@@ -48,6 +48,11 @@
        (update-sql id email)
        (honey-query db)
        (first)))
+
+(def burndown-public-cols
+  [:id :updated_at :burndown_total
+   :change :complete :prev_complete
+   :op :title :deleted])
 
 (def ^:private burndown-query
   (slurp (io/resource "todo_snap/queries/burndown.sql")))

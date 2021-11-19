@@ -65,11 +65,12 @@ The json returned by the burndown endpoint is an array of events that look like:
   "op": "insert",
   "id": "21481d03-a2f4-4ce5-97f3-0e45c4eedf38",
   "title": "bake cookies",
+  "deleted": false,
   "updatedAt": "2021-11-18T07:04:48Z"
 }
 ```
 
-Each event represents a change to the database. The "burndownTotal" is the number of incomplete, undeleted todos that existed after the event occurred. The "change" is change this event caused to the "burndownTotal". The fields "prevComplete" and "complete" represent the completed status of the todo before and after the event, respectively. While the "complete" field is always non-null, "prevComplete" can be null for an insert. The "op" field is an enum of 'insert', 'update', and 'delete', represeting the type of change. The "id" is the id of the todo, and the "title" is the title of the todo after the event; an update could have modified the status and the title. The "updatedAt" field is the time that the event occurred. All fields except "prevComplete" are guaranteed to be non-null.
+Each event represents a change to the database. The "burndownTotal" is the number of incomplete, undeleted todos that existed after the event occurred. The "change" is change this event caused to the "burndownTotal". The fields "prevComplete" and "complete" represent the completed status of the todo before and after the event, respectively. While the "complete" field is always non-null, "prevComplete" can be null for an insert. The "op" field is an enum of 'insert', 'update', and 'delete', represeting the type of change. The "id" is the id of the todo, and the "title" is the title of the todo after the event; an update could have modified the status and the title. The "updatedAt" field is the time that the event occurred. The "deleted" field is whether the todo was newly deleted. All fields except "prevComplete" are guaranteed to be non-null.
 
 ## Things I'd like to fix
 
