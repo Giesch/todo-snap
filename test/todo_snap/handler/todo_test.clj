@@ -105,4 +105,49 @@
             db    (->MockDB {:summary result-set})
             email "valid@gmail.com"]
         (t/is (= [:ataraxy.response/ok {:complete 0 :incomplete 1}]
-                 (handler/get-summary db email)))))))
+                 (handler/get-summary db email))))))
+
+  (t/testing "burndown"
+    (t/testing "with invalid email"
+      (let [db    (->MockDB {:burndown []})
+            email "nope"]
+        (t/is (= [:ataraxy.response/bad-request "email must be a valid email address"]
+                 (handler/get-burndown db email)))))
+
+    (t/testing "with valid email"
+      (let [result-set [{:burndown-total 2
+                         :change -1
+                         :complete true
+                         :id "50a5d34d-b023-4543-a7f1-f4f2ccabcaf8"
+                         :op "update"
+                         :prev-complete false
+                         :title "FINISH HIM"
+                         :updated-at "2021-11-18T07:04:20Z"}
+                        {:burndown-total 3
+                         :change 1
+                         :complete false
+                         :id "21481d03-a2f4-4ce5-97f3-0e45c4eedf38"
+                         :op "insert"
+                         :prev-complete nil
+                         :title "bake more cookies"
+                         :updated-at "2021-11-18T07:04:48Z"}]
+            db    (->MockDB {:burndown result-set})
+            email "valid@gmail.com"]
+        (t/is (= [:ataraxy.response/ok
+                  [{"burndownTotal" 2
+                    "change" -1
+                    "complete" true
+                    "id" "50a5d34d-b023-4543-a7f1-f4f2ccabcaf8"
+                    "op" "update"
+                    "prevComplete" false
+                    "title" "FINISH HIM"
+                    "updatedAt" "2021-11-18T07:04:20Z"}
+                   {"burndownTotal" 3
+                    "change" 1
+                    "complete" false
+                    "id" "21481d03-a2f4-4ce5-97f3-0e45c4eedf38"
+                    "op" "insert"
+                    "prevComplete" nil
+                    "title" "bake more cookies"
+                    "updatedAt" "2021-11-18T07:04:48Z"}]]
+                 (handler/get-burndown db email)))))))
