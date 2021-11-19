@@ -25,7 +25,7 @@
     (t/testing "with an invalid email"
       (let [db    (->MockDB {:list []})
             email "invalid"]
-        (t/is (= [:ataraxy.response/bad-request "must be a valid email address"]
+        (t/is (= [:ataraxy.response/bad-request "email must be a valid email address"]
                  (handler/list-todos db email))))))
 
   (t/testing "create todo"
@@ -90,4 +90,19 @@
             params {:id    "not a uuid"
                     :email "valid@gmail.com"}]
         (t/is (= [:ataraxy.response/bad-request {:id ["should be a uuid"]}]
-                 (handler/delete-todo db params)))))))
+                 (handler/delete-todo db params))))))
+
+  (t/testing "summary"
+    (t/testing "with invalid email"
+      (let [db    (->MockDB {:summary []})
+            email "nope"]
+        (t/is (= [:ataraxy.response/bad-request "email must be a valid email address"]
+                 (handler/get-summary db email)))))
+
+    (t/testing "with valid email"
+      (let [result-set [{:complete true :count 0}
+                        {:complete false :count 1}]
+            db    (->MockDB {:summary result-set})
+            email "valid@gmail.com"]
+        (t/is (= [:ataraxy.response/ok {:complete 0 :incomplete 1}]
+                 (handler/get-summary db email)))))))

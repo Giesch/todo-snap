@@ -46,10 +46,12 @@
 (def valid-email?
   (m/validator valid-email-schema))
 
-(defn- with-valid-email [email f]
+(defn- with-valid-email
+  "A validation helper for email route param"
+  [email f]
   (if (valid-email? email)
     [::response/ok (f email)]
-    [::response/bad-request "must be a valid email address"]))
+    [::response/bad-request "email must be a valid email address"]))
 
 (def delete-todo-params
   [:map
