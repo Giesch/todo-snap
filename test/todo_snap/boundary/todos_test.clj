@@ -13,28 +13,47 @@
    "jdbc:postgresql://localhost:5432/postgres?user=postgres&password=postgres"})
 
 (defn make-test-db
-  [db-name]
-  (jdbc/execute! pg-db-spec [(str "DROP DATABASE IF EXISTS \"" db-name "\"")] {:transaction? false})
-  (jdbc/execute! pg-db-spec [(str "CREATE DATABASE \"" db-name "\"")] {:transaction? false})
+  ([] (make-test-db (str (java.util.UUID/randomUUID))))
 
-  (let [connection-uri (str "jdbc:postgresql://localhost:5432/" db-name "?user=postgres&password=postgres")
-        db-spec        {:connection-uri connection-uri}
-        migrations     (ig/init-key :duct.migrator.ragtime/resources {:path "todo_snap/migrations"})]
+  ([db-name]
+   (jdbc/execute! pg-db-spec [(str "DROP DATABASE IF EXISTS \"" db-name "\"")] {:transaction? false})
+   (jdbc/execute! pg-db-spec [(str "CREATE DATABASE \"" db-name "\"")] {:transaction? false})
 
-    (ragtime/migrate-all (rag-jdbc/sql-database db-spec) {} migrations)
+   (let [connection-uri (str "jdbc:postgresql://localhost:5432/" db-name "?user=postgres&password=postgres")
+         db-spec        {:connection-uri connection-uri}
+         migrations     (ig/init-key :duct.migrator.ragtime/resources {:path "todo_snap/migrations"})]
 
-    (duct-sql/->Boundary db-spec)))
+     (ragtime/migrate-all (rag-jdbc/sql-database db-spec) {} migrations)
 
-(def valid-email "valid@gmail.com")
+     (duct-sql/->Boundary db-spec))))
+
+(def ^:private valid-email "valid@gmail.com")
+
+(defn- insert-todo [db title]
+  (first (todos/create-todo db {:title title :email valid-email})))
+
+(defn- complete-todo [db todo]
+  (todos/update-todo db {:complete true
+                         :email    valid-email
+                         :id       (:id todo)}))
 
 (t/deftest todos-boundary-test
   (t/testing "create and complete a todo"
-    (let [db           (make-test-db "migrated_test_db" #_(str (java.util.UUID/randomUUID)))
-          cookies-todo (first (todos/create-todo db {:title "bake cookies" :email valid-email}))]
-      (todos/update-todo db {:complete true
-                             :email    valid-email
-                             :id       (:id cookies-todo)})
+    (let [db           (make-test-db)
+          cookies-todo (insert-todo db "bake cookies")]
+
+      (complete-todo db cookies-todo)
 
       (let [listed-todos  (todos/list-todos db valid-email)
             expected-todo (assoc (select-keys cookies-todo todos/public-todo-cols) :complete true)]
-        (t/is (= listed-todos [expected-todo]))))))
+        (t/is (= listed-todos [expected-todo])))))
+
+  (t/testing "todos summary"
+    (let [db                (make-test-db)
+          cookies-todo      (insert-todo db "bake cookies")]
+      (complete-todo db cookies-todo)
+      (insert-todo db "eat cookies")
+      (insert-todo db "bake more cookies")
+
+      (t/is (= [{:complete false :count 2} {:complete true :count 1}]
+               (todos/summary db valid-email))))))
