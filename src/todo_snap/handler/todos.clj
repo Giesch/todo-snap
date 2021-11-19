@@ -1,5 +1,7 @@
 (ns todo-snap.handler.todos
   (:require [ataraxy.response :as response]
+            [camel-snake-kebab.core :as csk]
+            [camel-snake-kebab.extras :as cske]
             [integrant.core :as ig]
             [malli.core :as m]
             [malli.error :as me]
@@ -68,13 +70,18 @@
       (me/humanize)))
 
 ;;;; handlers
-;; NOTE these defmethods might be a good candidate for a macro
+;; NOTE these defmethods for ig/init-key might be a good candidate for a macro
+
+(defn- camel-keys
+  "Camel-cases the keys of a map to be returned as json"
+  [event]
+  (cske/transform-keys csk/->camelCaseString event))
 
 ;; list
 
 (defn list-todos [db email]
   (with-valid-email email
-    #(todos/list-todos db %)))
+    #(map camel-keys (todos/list-todos db %))))
 
 (defmethod ig/init-key :todo-snap.handler.todos/list
   [_ {:keys [db]}]
@@ -88,7 +95,7 @@
     [::response/bad-request (malli-error create-todo-params params)]
 
     (let [valid-params (strip-params params create-todo-params)]
-      [::response/ok (todos/create-todo db valid-params)])))
+      [::response/ok (camel-keys (todos/create-todo db valid-params))])))
 
 (defmethod ig/init-key :todo-snap.handler.todos/create
   [_ {:keys [db]}]
@@ -98,17 +105,21 @@
 ;; update
 
 (defn- to-nullable-bool [s]
-  (if s (= s "true") nil))
+  (get {"true" true "false" false} s))
 
 (defn- parse-update [params]
   (some-> params
           (strip-params update-todo-params)
+          ;; NOTE
+          ;; this relies on the uuid having already been validated
+          ;; it should just use a coercer in the router instead
           (update :id parse-uuid)
           (update :complete to-nullable-bool)))
 
 (defn- parse-delete [params]
   (some-> params
           (strip-params delete-todo-params)
+          ;; NOTE this should also use a coercer, as above
           (update :id parse-uuid)))
 
 (defn update-todo
@@ -119,12 +130,12 @@
     [::response/bad-request (malli-error update-todo-params params)]
 
     (nil? (parse-uuid (:id params)))
-    [::response/bad-request "id must be a valid uuid"]
+    [::response/bad-request {:id ["should be a uuid"]}]
 
     :else (if-let [result (->> params
                                (parse-update)
                                (todos/update-todo db))]
-            [::response/ok result]
+            [::response/ok (camel-keys result)]
             [::response/not-found])))
 
 (defmethod ig/init-key :todo-snap.handler.todos/update
@@ -140,12 +151,12 @@
     [::response/bad-request (malli-error delete-todo-params params)]
 
     (nil? (parse-uuid (:id params)))
-    [::response/bad-request "id must be a valid uuid"]
+    [::response/bad-request {:id ["should be a uuid"]}]
 
     :else (if-let [result (->> params
                                (parse-delete)
                                (todos/delete-todo db))]
-            [::response/ok result]
+            [::response/no-content (camel-keys result)]
             [::response/not-found])))
 
 (defmethod ig/init-key :todo-snap.handler.todos/delete
@@ -180,11 +191,11 @@
     (get-summary db email)))
 
 (defn get-burndown
-  ;; TODO camel case this json
-  "Returns an ordered list of todo changes, with a running total of incomplete undeleted todos"
+  "Returns an ordered list of todo changes,
+   with a running total of incomplete undeleted todos"
   [db email]
   (with-valid-email email
-    #(todos/burndown db %)))
+    #(map camel-keys (todos/burndown db %))))
 
 (defmethod ig/init-key :todo-snap.handler.todos/burndown
   [_ {:keys [db]}]
