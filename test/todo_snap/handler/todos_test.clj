@@ -16,7 +16,7 @@
   (summary [{opts :opts} email] (:summary opts))
   (burndown [{opts :opts} email] (:burndown opts)))
 
-(t/deftest todos-test
+(t/deftest todos-handler-test
   (t/testing "list todos"
     (t/testing "with a valid email"
       (let [db    (->MockDB {:list []})
