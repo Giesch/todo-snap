@@ -20,7 +20,7 @@ CREATE TABLE todos_audit (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE OR REPLACE FUNCTION foo_audit_info() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION audit_info() RETURNS TRIGGER AS $$
 BEGIN
     IF (TG_OP = 'DELETE') THEN
         INSERT INTO todos_audit SELECT 'delete', OLD.*;
@@ -35,6 +35,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER todos_audit_trigger AFTER INSERT OR UPDATE OR DELETE ON todos
-FOR EACH ROW EXECUTE PROCEDURE foo_audit_info();
+FOR EACH ROW EXECUTE PROCEDURE audit_info();
 
 CREATE INDEX ON todos_audit (deleted, email);
