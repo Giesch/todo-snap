@@ -75,6 +75,7 @@ Each event represents a change to the database. The "burndownTotal" is the numbe
 ## Things I'd like to fix
 
 1. Improve integration tests  
+   I've accidentally written tests that depend on having a repl running, but fail with 'lein test'.  
    I'm guessing there's a nicer way to do integration or e2e tests with duct. But judging from github issues, I think I'd have to ask for advice in the clojurians slack, which didn't seem appropriate for this exercise.
 
 2. Structured documentation  
