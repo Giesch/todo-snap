@@ -137,11 +137,12 @@
     (nil? (parse-uuid (:id params)))
     [::response/bad-request {:id ["should be a uuid"]}]
 
-    :else (if-let [result (->> params
-                               (parse-update)
-                               (todos/update-todo db))]
-            [::response/ok (camel-keys result)]
-            [::response/not-found])))
+    :else
+    (if-let [result (->> params
+                         (parse-update)
+                         (todos/update-todo db))]
+      [::response/ok (camel-keys result)]
+      [::response/not-found])))
 
 (defmethod ig/init-key :todo-snap.handler.todos/update
   [_ {:keys [db]}]

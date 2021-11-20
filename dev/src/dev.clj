@@ -16,8 +16,17 @@
 (defn read-config []
   (duct/read-config (io/resource "todo_snap/config.edn")))
 
-(defn test []
-  (eftest/run-tests (eftest/find-tests "test")))
+(defn test
+  ([] (test "test"))
+
+  ([specifier]
+   (eftest/run-tests (eftest/find-tests specifier))))
+
+(defn handler-test []
+  (test "test/todo_snap/handler"))
+
+(defn boundary-test []
+  (test "test/todo_snap/boundary"))
 
 (def profiles
   [:duct.profile/dev :duct.profile/local])

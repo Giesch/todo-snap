@@ -54,6 +54,16 @@
         (t/is (= [:ataraxy.response/ok {}]
                  (handler/update-todo db params)))))
 
+    (t/testing "not found"
+      (let [db     (->MockDB {:update nil})
+            params {:id       "50a5d34d-b023-4543-a7f1-f4f2ccabcaf8"
+                    :email    "valid@gmail.com"
+                    :complete "true"
+                    :title    "bake cookies"}]
+
+        (t/is (= [:ataraxy.response/not-found]
+                 (handler/update-todo db params)))))
+
     (t/testing "with invalid uuid"
       (let [db     (->MockDB {:update {}})
             params {:id       "not a uuid"
@@ -78,6 +88,13 @@
             params {:id    "50a5d34d-b023-4543-a7f1-f4f2ccabcaf8"
                     :email "valid@gmail.com"}]
         (t/is (= [:ataraxy.response/no-content {}]
+                 (handler/delete-todo db params)))))
+
+    (t/testing "not found"
+      (let [db     (->MockDB {:delete nil})
+            params {:id    "50a5d34d-b023-4543-a7f1-f4f2ccabcaf8"
+                    :email "valid@gmail.com"}]
+        (t/is (= [:ataraxy.response/not-found]
                  (handler/delete-todo db params)))))
 
     (t/testing "with invalid email"
