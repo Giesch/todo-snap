@@ -22,6 +22,7 @@
 
    (let [connection-uri (str "jdbc:postgresql://localhost:5432/" db-name "?user=postgres&password=postgres")
          db-spec        {:connection-uri connection-uri}
+         ;; NOTE this depends on having a repl running
          migrations     (ig/init-key :duct.migrator.ragtime/resources {:path "todo_snap/migrations"})]
 
      (ragtime/migrate-all (rag-jdbc/sql-database db-spec) {} migrations)
