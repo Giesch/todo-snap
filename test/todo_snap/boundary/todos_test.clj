@@ -10,15 +10,19 @@
 ;; helpers
 
 (def ^:private pg-db-spec
+  "The db spec for the root 'postgres' database, used for creating test databases"
   {:connection-uri
    "jdbc:postgresql://localhost:5432/postgres?user=postgres&password=postgres"})
+
+(defn- pg-execute-no-tx! [sql]
+  (jdbc/execute! pg-db-spec [sql] {:transaction? false}))
 
 (defn make-test-db
   ([] (make-test-db (str (java.util.UUID/randomUUID))))
 
   ([db-name]
-   (jdbc/execute! pg-db-spec [(str "DROP DATABASE IF EXISTS \"" db-name "\"")] {:transaction? false})
-   (jdbc/execute! pg-db-spec [(str "CREATE DATABASE \"" db-name "\"")] {:transaction? false})
+   (pg-execute-no-tx! (str "DROP DATABASE IF EXISTS \"" db-name "\""))
+   (pg-execute-no-tx! (str "CREATE DATABASE \"" db-name "\""))
 
    (let [connection-uri (str "jdbc:postgresql://localhost:5432/" db-name "?user=postgres&password=postgres")
          db-spec        {:connection-uri connection-uri}
