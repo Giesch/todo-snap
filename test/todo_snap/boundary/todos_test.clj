@@ -49,18 +49,30 @@
   (select-keys event [:burndown_total :change :complete
                       :prev_complete :op :title :deleted]))
 
+(defn- strip-public-todo
+  "Keeps only the public & deterministic fields of a todo for test assertions"
+  [todo]
+  (select-keys todo [:id :title :complete]))
+
 ;; tests
 
 (t/deftest todos-boundary-test-create
+  (t/testing "create returns only public fields"
+    (let [db           (make-test-db)
+          cookies-todo (insert-todo! db "bake cookies")]
+      (t/is (= (into #{} todos/public-todo-cols)
+               (into #{} (keys cookies-todo))))))
+
   (t/testing "create and complete a todo"
     (let [db           (make-test-db)
           cookies-todo (insert-todo! db "bake cookies")]
 
       (complete-todo! db cookies-todo)
 
-      (let [listed-todos  (todos/list-todos db valid-email)
+      (let [listed-todos (->> (todos/list-todos db valid-email)
+                              (map strip-public-todo))
             expected-todo (-> cookies-todo
-                              (select-keys todos/public-todo-cols)
+                              (strip-public-todo)
                               (assoc :complete true))]
         (t/is (= [expected-todo] listed-todos))))))
 

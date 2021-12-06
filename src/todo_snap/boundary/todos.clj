@@ -29,7 +29,7 @@
     "Gets complete state change events for a given user"))
 
 (def public-todo-cols
-  [:id :title :complete])
+  [:id :title :complete :created_at :updated_at])
 
 (defn- where-user-todos [email]
   [:and
@@ -61,7 +61,8 @@
   duct.database.sql.Boundary
 
   (create-todo [{db :spec} todo-params]
-    (jdbc/insert! db :todos todo-params))
+    (->> (jdbc/insert! db :todos todo-params)
+         (map #(select-keys % public-todo-cols))))
 
   (list-todos [{db :spec} email]
     (honey-query db {:from   [:todos]
