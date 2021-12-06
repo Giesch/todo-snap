@@ -159,11 +159,12 @@
     (nil? (parse-uuid (:id params)))
     [::response/bad-request {:id ["should be a uuid"]}]
 
-    :else (if-let [result (->> params
-                               (parse-delete)
-                               (todos/delete-todo db))]
-            [::response/no-content (camel-keys result)]
-            [::response/not-found])))
+    :else
+    (if-let [_deleted-todo (->> params
+                                (parse-delete)
+                                (todos/delete-todo db))]
+      [::response/no-content]
+      [::response/not-found])))
 
 (defmethod ig/init-key :todo-snap.handler.todos/delete
   [_ {:keys [db]}]

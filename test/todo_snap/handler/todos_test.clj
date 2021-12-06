@@ -78,8 +78,9 @@
             params {:id       "50a5d34d-b023-4543-a7f1-f4f2ccabcaf8"
                     :email    "invalid"
                     :complete "truthy"}]
-        (t/is (= [:ataraxy.response/bad-request {:complete ["should be either true or false"]
-                                                 :email    ["should match regex"]}]
+        (t/is (= [:ataraxy.response/bad-request
+                  {:complete ["should be either true or false"]
+                   :email    ["should match regex"]}]
                  (handler/update-todo db params))))))
 
   (t/testing "delete todo"
@@ -87,7 +88,7 @@
       (let [db     (->MockDB {:delete {}})
             params {:id    "50a5d34d-b023-4543-a7f1-f4f2ccabcaf8"
                     :email "valid@gmail.com"}]
-        (t/is (= [:ataraxy.response/no-content {}]
+        (t/is (= [:ataraxy.response/no-content]
                  (handler/delete-todo db params)))))
 
     (t/testing "not found"
