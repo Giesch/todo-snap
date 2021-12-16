@@ -25,6 +25,9 @@
   (summary [db email]
     "Gets summary information (complete/incomplete counts) for a given user")
 
+  (burndown-events [db email]
+    "Gets raw burndown events")
+
   (burndown [db email]
     "Gets complete state change events for a given user"))
 
@@ -82,6 +85,11 @@
                      :where    (where-user-todos email)
                      :group-by [:complete]
                      :select   [:complete [[:count :*]]]}))
+
+  (burndown-events [{db :spec} email]
+    (honey-query db {:from [:todos_audit]
+                     :where [:= :email email]
+                     :select [:*]}))
 
   (burndown [{db :spec} email]
     (jdbc/query db [burndown-query email])))

@@ -206,3 +206,49 @@
   [_ {:keys [db]}]
   (fn [{[_ email] :ataraxy/result}]
     (get-burndown db email)))
+
+(defn get-burndown-clj
+  "Reproducing burndown in clojure"
+  [db email]
+  (todos/burndown-events))
+
+(defmethod ig/init-key :todo-snap.handler.todos/burndown-clj
+  [_ {:keys [db]}]
+  (fn [{[_ email] :ataraxy/result}]
+    (get-burndown-clj db email)))
+
+(comment
+  (def db-events [{:complete false,
+                   :op       "insert",
+                   :deleted  false
+                   :id       "first"}
+
+                  {:complete true,
+                   :op       "update",
+                   :deleted  false
+                   :id       "first"}])
+
+
+  (defn add-event-meta [events]
+    (-> (reduce (fn [state event]
+                  (case (:op event)
+                    "insert"
+                    (let [new-state (-> state
+                                        (assoc-in [:todos-by-id (:id event)] event)
+                                        (update :burndown-total inc))
+                          new-event (-> event
+                                        (assoc :burndown-total (:burndown-total new-state)))]
+                      (update new-state :events #(conj % new-event)))
+
+                    "update" state))
+                {:events []
+                 :todos-by-id {}
+                 :burndown-total 0}
+                events)
+        (:events))
+
+    )
+
+  (add-event-meta db-events)
+
+  )

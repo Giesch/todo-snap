@@ -14,9 +14,106 @@
   (update-todo [{opts :opts} params] (:update opts))
   (delete-todo [{opts :opts} params] (:delete opts))
   (summary [{opts :opts} email] (:summary opts))
+  (burndown-events [{opts :opts} email] (:burndown-events opts))
   (burndown [{opts :opts} email] (:burndown opts)))
 
 (t/deftest todos-handler-unit-test
+  (t/testing "burndown events"
+    (let [expected-events [{:burndown_total 1,
+                            :change         1,
+                            :complete       false,
+                            :op             "insert",
+                            :prev_complete  nil,
+                            :deleted        false
+                            :title          "first"}
+
+                           {:burndown_total 2,
+                            :change         1,
+                            :complete       false,
+                            :op             "insert",
+                            :prev_complete  nil,
+                            :deleted        false
+                            :title          "second"}
+
+                           {:burndown_total 3,
+                            :change         1,
+                            :complete       false,
+                            :op             "insert",
+                            :prev_complete  nil,
+                            :deleted        false
+                            :title          "third"}
+
+                           {:burndown_total 2,
+                            :change         -1,
+                            :complete       true,
+                            :op             "update",
+                            :prev_complete  false
+                            :deleted        false
+                            :title          "second"}
+
+                           {:burndown_total 3,
+                            :change         1,
+                            :complete       false,
+                            :op             "insert",
+                            :prev_complete  nil,
+                            :deleted        false
+                            :title          "fourth"}
+
+                           {:burndown_total 2,
+                            :change         -1,
+                            :complete       true,
+                            :op             "update",
+                            :prev_complete  false,
+                            :deleted        false
+                            :title          "third"}
+
+                           {:burndown_total 3,
+                            :change         1,
+                            :complete       false,
+                            :op             "insert",
+                            :prev_complete  nil,
+                            :deleted        false
+                            :title          "fifth"}
+
+                           {:burndown_total 2,
+                            :change         -1,
+                            :complete       true,
+                            :op             "update",
+                            :prev_complete  false,
+                            :deleted        false
+                            :title          "fifth"}
+
+                           {:burndown_total 1,
+                            :change         -1,
+                            :complete       false,
+                            :op             "update",
+                            :prev_complete  false,
+                            :deleted        true
+                            :title          "fourth"}
+
+                           {:burndown_total 0,
+                            :change         -1,
+                            :complete       true,
+                            :op             "update",
+                            :prev_complete  false,
+                            :deleted        false
+                            :title          "first"}
+
+                           {:burndown_total 0,
+                            :change         0,
+                            :complete       true,
+                            :deleted        true,
+                            :op             "update",
+                            :prev_complete  true,
+                            :title          "first"}]
+
+          db-events (map #(select-keys % [:complete :op :prev_complete :deleted :title])
+                         expected-events)
+
+          db (->MockDB {:burndown-events db-events})]
+
+      (t/is (= [] (handler/get-burndown-clj db "valid@gmail.com")))))
+
   (t/testing "list todos"
     (t/testing "with a valid email"
       (let [db    (->MockDB {:list []})

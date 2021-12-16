@@ -24,6 +24,7 @@
   :todo-snap.handler.todos/delete   {:db #ig/ref :duct.database/sql}
   :todo-snap.handler.todos/summary  {:db #ig/ref :duct.database/sql}
   :todo-snap.handler.todos/burndown {:db #ig/ref :duct.database/sql}
+  :todo-snap.handler.todos/burndown-clj {:db #ig/ref :duct.database/sql}
 
   ;; routes
 
